@@ -1,0 +1,48 @@
+struct Student shro
+    int32 rollNo
+    int32 marks
+    char grade
+khtm
+
+fn char evaluateGrade ( int32 score ) shro
+    char resultGrade
+    agar ( score >= 80 ) shro
+        resultGrade medalo 'A'
+    khtm magar shro
+        resultGrade medalo 'B'
+    khtm
+    wapis resultGrade
+khtm
+
+fn khali auditRecord ( int32 currentMarks ) shro
+    int32 margin
+    agar ( currentMarks != 100 ) shro
+        margin medalo 100 - currentMarks
+    khtm
+    wapis khali
+khtm
+
+fn int32 main ( ) shro
+    struct Student st
+    int32 boosted
+    int32 exitCode
+
+    st.rollNo medalo 143
+    st.marks medalo 65
+    boosted medalo st.marks
+
+    jabtak ( boosted <= 75 ) shro
+        boosted medalo boosted + 5
+    khtm
+
+    st.grade medalo evaluateGrade ( boosted )
+    auditRecord ( boosted )
+
+    agar ( st.grade = 'A' ) shro
+        exitCode medalo st.rollNo
+    khtm magar shro
+        exitCode medalo 0
+    khtm
+
+    wapis exitCode
+khtm

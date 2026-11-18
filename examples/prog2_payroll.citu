@@ -1,0 +1,40 @@
+struct Employee shro
+    uint16 id
+    uint32 salary
+    int16 bonusTier
+khtm
+
+fn uint32 computeBonus ( uint32 base , int16 tier ) shro
+    uint32 bonus
+    agar ( tier = 1 ) shro
+        bonus medalo base / 2
+    khtm magar shro
+        bonus medalo base / 4
+    khtm
+    wapis bonus
+khtm
+
+fn int32 main ( ) shro
+    struct Employee emp
+    uint32 extraPay
+    int16 months
+
+    emp.id medalo 101
+    emp.salary medalo 4000
+    emp.bonusTier medalo 1
+    months medalo 3
+
+    agar ( emp.id = 101 ) shro
+        jabtak ( months > 0 ) shro
+            agar ( emp.salary < 10000 ) shro
+                uint32 newSalary
+                extraPay medalo computeBonus ( emp.salary , emp.bonusTier )
+                newSalary medalo emp.salary + extraPay
+                emp.salary medalo newSalary
+            khtm
+            months medalo months - 1
+        khtm
+    khtm
+
+    wapis 0
+khtm

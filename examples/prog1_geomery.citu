@@ -1,0 +1,37 @@
+struct Box shro
+    int32 width
+    int32 height
+khtm
+
+fn int32 calcArea ( int32 w , int32 h ) shro
+    int32 area
+    area medalo w * h
+    wapis area
+khtm
+
+fn int32 scaleBox ( int32 currentArea , int32 limit ) shro
+    int32 result
+    result medalo currentArea
+    jabtak ( result < limit ) shro
+        result medalo result + 10
+    khtm
+    wapis result
+khtm
+
+fn int32 main ( ) shro
+    struct Box myBox
+    int32 totalArea
+    int32 finalScore
+
+    myBox.width medalo 5
+    myBox.height medalo 8
+    totalArea medalo calcArea ( myBox.width , myBox.height )
+
+    agar ( totalArea > 30 ) shro
+        finalScore medalo scaleBox ( totalArea , 100 )
+    khtm magar shro
+        finalScore medalo totalArea
+    khtm
+
+    wapis finalScore
+khtm
