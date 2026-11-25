@@ -1,0 +1,30 @@
+# Build outputs
+build/
+bin/*
+!bin/.gitkeep
+*.o
+*.obj
+*.d
+*.exe
+*.a
+
+# Intermediate compiler files produced by running icc
+*.lex
+*.ast
+*.sym
+*.ir
+*.asm
+# ...except the spec golden files used by the integration test
+!tests/golden/*.lex
+!tests/golden/*.ast
+
+# Internal handoff notes (not part of submissions)
+doc/IMPLEMENTATION_STATUS.md
+
+# Editor / OS noise
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+Thumbs.db
