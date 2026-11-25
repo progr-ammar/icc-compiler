@@ -1,0 +1,5 @@
+fn uint32 computeHalf ( uint32 base ) shro
+    uint32 res
+    res medalo base / 2
+    wapis res
+khtm

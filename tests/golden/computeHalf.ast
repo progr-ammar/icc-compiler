@@ -1,0 +1,19 @@
+@FORMAT | ICC_AST | v1.0
+@SOURCE | computeHalf.citu
+@TOTAL_NODES | 14
+# NODE_ID | PARENT_ID | CHILD_INDEX | NODE_KIND | AST_OP | LEXEME | LIT_VAL | LINE_NUM
+0 | -1 | -1 | PROG | @NONE | @NONE | -1 | 1
+1 | 0 | 0 | FUNC_DEF | uint32 | computeHalf | -1 | 1
+2 | 1 | 0 | PARAM_DECL | uint32 | base | -1 | 1
+3 | 1 | 1 | BLOCK_CST | @NONE | @NONE | -1 | 1
+4 | 3 | 0 | DECL_LIST | @NONE | @NONE | -1 | 2
+5 | 4 | 0 | VAR_DECL | uint32 | res | -1 | 2
+6 | 3 | 1 | STMT_LIST | @NONE | @NONE | -1 | 3
+7 | 6 | 0 | ASSIGN_STMT | medalo | medalo | -1 | 3
+8 | 7 | 0 | VAR_REF | @NONE | res | -1 | 3
+9 | 7 | 1 | BIN_EXPR | / | / | -1 | 3
+10 | 9 | 0 | VAR_REF | @NONE | base | -1 | 3
+11 | 9 | 1 | INT_LIT | @NONE | 2 | 2 | 3
+12 | 6 | 1 | RETURN_STMT | wapis | wapis | -1 | 4
+13 | 12 | 0 | VAR_REF | @NONE | res | -1 | 4
+@END_FILE
