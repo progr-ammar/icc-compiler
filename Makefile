@@ -1,4 +1,4 @@
-# ICC (ITU Compiler Collection) — Phase 2 build
+# ICC (ITU Compiler Collection) — Phase 2 + Phase 3 Stage 3A build
 #
 #   make              build bin/icc (the Phase 2 CLI)
 #   make tests        build all unit-test executables into build/
@@ -26,13 +26,17 @@ BINDIR  := bin
 ICC     := $(BINDIR)/icc$(EXE)
 OUTDIR  := $(BUILD)/integration
 
-# Phase 2 library modules (everything except the CLI entry point)
+# Library modules (everything except the CLI entry point)
+#   Phase 2: lexer, .lex I/O, LL(1) parser, .ast I/O
+#   Phase 3 Stage 3A: symbol-table schema and .sym I/O
 LIB_SRCS := src/lexer.cpp src/lex_writer.cpp src/lex_reader.cpp \
-            src/ast_schema.cpp src/parser.cpp src/ast_writer.cpp src/ast_reader.cpp
+            src/ast_schema.cpp src/parser.cpp src/ast_writer.cpp src/ast_reader.cpp \
+            src/sym_schema.cpp src/sym_writer.cpp src/sym_reader.cpp
 LIB_OBJS := $(LIB_SRCS:src/%.cpp=$(OBJDIR)/%.o)
 MAIN_OBJ := $(OBJDIR)/main.o
 
-UNIT_TESTS := test_lexer test_lex_writer test_lex_reader test_parser
+UNIT_TESTS := test_lexer test_lex_writer test_lex_reader test_parser \
+              test_sym_writer test_sym_reader
 UNIT_BINS  := $(UNIT_TESTS:%=$(BUILD)/%$(EXE))
 INTEG_BIN  := $(BUILD)/test_integration$(EXE)
 

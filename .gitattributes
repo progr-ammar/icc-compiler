@@ -3,3 +3,4 @@ tests/golden/* text eol=lf
 tests/fixtures/* text eol=lf
 *.lex text eol=lf
 *.ast text eol=lf
+*.sym text eol=lf

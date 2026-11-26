@@ -14,9 +14,10 @@ bin/*
 *.sym
 *.ir
 *.asm
-# ...except the spec golden files used by the integration test
+# ...except the spec golden files used by the tests
 !tests/golden/*.lex
 !tests/golden/*.ast
+!tests/golden/*.sym
 
 # Internal handoff notes (not part of submissions)
 doc/IMPLEMENTATION_STATUS.md
