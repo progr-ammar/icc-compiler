@@ -1,9 +1,9 @@
-# ICC (ITU Compiler Collection) — Phase 2 + Phase 3 Stage 3A build
+# ICC (ITU Compiler Collection) — Phases 2-3 build
 #
-#   make              build bin/icc (the Phase 2 CLI)
+#   make              build bin/icc (the CLI)
 #   make tests        build all unit-test executables into build/
 #   make test         build and run all unit-test suites
-#   make integration  run bin/icc on the samples and verify the files it writes
+#   make integration  run bin/icc on the samples and verify the .lex/.ast/.sym it writes
 #   make check        test + integration
 #   make clean        remove build/ and generated binaries
 #
@@ -44,6 +44,9 @@ INTEG_BIN  := $(BUILD)/test_integration$(EXE)
 
 SAMPLES  := examples/prog1_geometry.citu examples/prog2_payroll.citu examples/prog3_grades.citu
 FIXTURES := tests/fixtures/min_return.citu tests/fixtures/computeHalf.citu
+MULTI    := tests/fixtures/multi_lib.citu tests/fixtures/multi_app.citu
+NEGDIR   := $(OUTDIR)/negative
+STOPDIR  := $(OUTDIR)/stop_after
 
 .PHONY: all tests test integration check clean
 
@@ -66,23 +69,48 @@ $(BUILD)/test_%$(EXE): $(OBJDIR)/test_%.o $(LIB_OBJS)
 
 tests: $(UNIT_BINS) $(INTEG_BIN)
 
-# Unit suites write scratch files under bin/ and read examples/ relative to the repo root.
+# Unit suites read examples/ and tests/ relative to the repo root; Phase 2/3A suites
+# write scratch files under bin/, test_semantic under build/test_semantic/.
 test: $(UNIT_BINS) | $(BINDIR)
 	@status=0; for t in $(UNIT_BINS); do echo ""; echo ">>> $$t"; ./$$t || status=1; done; \
 	echo ""; if [ $$status -eq 0 ]; then echo "ALL UNIT SUITES PASSED"; else echo "UNIT SUITE FAILURES"; fi; \
 	exit $$status
 
 integration: $(ICC) $(INTEG_BIN)
-	@rm -rf $(OUTDIR) && mkdir -p $(OUTDIR)
-	./$(ICC) -d $(OUTDIR) $(SAMPLES) $(FIXTURES)
+	@rm -rf $(OUTDIR) && mkdir -p $(OUTDIR) $(NEGDIR) $(STOPDIR)
+	@echo ">>> icc: one invocation per independent program"
+	@for f in $(SAMPLES) $(FIXTURES); do ./$(ICC) -d $(OUTDIR) $$f || exit 1; done
+	@echo ">>> icc: one two-file program (multi_app imports multi_lib.sym)"
+	./$(ICC) -d $(OUTDIR) $(MULTI)
 	./$(INTEG_BIN) $(OUTDIR)
 	@echo ""; echo ">>> CLI negative checks"
-	@./$(ICC) -q -d $(OUTDIR) tests/fixtures/bad_lexical.citu; s=$$?; \
-	  if [ $$s -eq 1 ] && [ ! -f $(OUTDIR)/bad_lexical.lex ]; then echo "  OK: lexical error -> exit 1, no .lex"; \
+	@./$(ICC) -q -d $(NEGDIR) tests/fixtures/bad_lexical.citu; s=$$?; \
+	  if [ $$s -eq 1 ] && [ ! -f $(NEGDIR)/bad_lexical.lex ]; then echo "  OK: lexical error -> exit 1, no .lex"; \
 	  else echo "  FAIL: bad_lexical exit=$$s"; exit 1; fi
-	@./$(ICC) -q -d $(OUTDIR) tests/fixtures/bad_syntax.citu; s=$$?; \
-	  if [ $$s -eq 1 ] && [ -f $(OUTDIR)/bad_syntax.lex ] && [ ! -f $(OUTDIR)/bad_syntax.ast ]; then \
-	  echo "  OK: syntax error -> exit 1, .lex kept, no .ast"; else echo "  FAIL: bad_syntax exit=$$s"; exit 1; fi
+	@./$(ICC) -q -d $(NEGDIR) tests/fixtures/bad_syntax.citu; s=$$?; \
+	  if [ $$s -eq 1 ] && [ -f $(NEGDIR)/bad_syntax.lex ] && [ ! -f $(NEGDIR)/bad_syntax.ast ] && \
+	  [ ! -f $(NEGDIR)/bad_syntax.sym ]; then echo "  OK: syntax error -> exit 1, .lex kept, no .ast/.sym"; \
+	  else echo "  FAIL: bad_syntax exit=$$s"; exit 1; fi
+	@./$(ICC) -q -d $(NEGDIR) tests/fixtures/bad_semantic.citu 2>$(NEGDIR)/sema1.err; s=$$?; \
+	  if [ $$s -eq 1 ] && grep -q "SEMANTIC_ERROR_UNDECLARED_IDENTIFIER in bad_semantic.citu at Line 3" $(NEGDIR)/sema1.err && \
+	  [ -f $(NEGDIR)/bad_semantic.lex ] && [ -f $(NEGDIR)/bad_semantic.ast ] && [ ! -f $(NEGDIR)/bad_semantic.sym ] && \
+	  [ ! -f $(NEGDIR)/bad_semantic.sym.tmp ]; then echo "  OK: semantic error -> exit 1, diagnostic printed, .lex/.ast kept, no .sym"; \
+	  else echo "  FAIL: bad_semantic exit=$$s"; cat $(NEGDIR)/sema1.err; exit 1; fi
+	@printf "PRE-EXISTING SYM\n" > $(NEGDIR)/bad_semantic.sym; \
+	  ./$(ICC) -q -d $(NEGDIR) tests/fixtures/bad_semantic.citu 2>$(NEGDIR)/sema2.err; s=$$?; \
+	  if [ $$s -eq 1 ] && [ "$$(cat $(NEGDIR)/bad_semantic.sym)" = "PRE-EXISTING SYM" ] && \
+	  grep -q "left unchanged" $(NEGDIR)/sema2.err && [ ! -f $(NEGDIR)/bad_semantic.sym.tmp ]; then \
+	  echo "  OK: semantic error keeps a pre-existing .sym untouched and says so"; \
+	  else echo "  FAIL: pre-existing .sym exit=$$s"; exit 1; fi
+	@./$(ICC) -q -d $(NEGDIR) tests/fixtures/bad_semantic.citu tests/fixtures/multi_lib.citu 2>$(NEGDIR)/sema3.err; s=$$?; \
+	  if [ $$s -eq 1 ] && grep -q "was not compiled" $(NEGDIR)/sema3.err && [ ! -f $(NEGDIR)/multi_lib.sym ]; then \
+	  echo "  OK: a failed unit stops the later units of the same program"; \
+	  else echo "  FAIL: multi-file chain exit=$$s"; exit 1; fi
+	@./$(ICC) -q --stop-after parse -d $(STOPDIR) tests/fixtures/min_return.citu; s=$$?; \
+	  if [ $$s -eq 0 ] && [ -f $(STOPDIR)/min_return.ast ] && [ ! -f $(STOPDIR)/min_return.sym ]; then \
+	  echo "  OK: --stop-after parse -> .lex/.ast only (Phase 2 behaviour)"; else echo "  FAIL: stop-after parse exit=$$s"; exit 1; fi
+	@./$(ICC) -q --stop-after codegen tests/fixtures/min_return.citu 2>/dev/null; s=$$?; \
+	  if [ $$s -eq 2 ]; then echo "  OK: unknown stage -> exit 2"; else echo "  FAIL: unknown stage exit=$$s"; exit 1; fi
 	@./$(ICC) -q 2>/dev/null; s=$$?; \
 	  if [ $$s -eq 2 ]; then echo "  OK: no input -> exit 2"; else echo "  FAIL: no-input exit=$$s"; exit 1; fi
 	@./$(ICC) -q examples/../README.md 2>/dev/null; s=$$?; \

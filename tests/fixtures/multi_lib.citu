@@ -1,0 +1,8 @@
+struct Point shro
+    int32 x
+    int32 y
+khtm
+
+fn int32 manhattan ( int32 a , int32 b ) shro
+    wapis a + b
+khtm

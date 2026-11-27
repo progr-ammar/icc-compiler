@@ -1,0 +1,6 @@
+fn int32 main ( ) shro
+    struct Point p
+    p.x medalo 3
+    p.y medalo 4
+    wapis manhattan ( p.x , p.y )
+khtm
